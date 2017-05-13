@@ -4,9 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -139,15 +137,10 @@ public class PngSupport {
 	 * @return an array of RGB colors
 	 */
 	public static int[] parseColors(final String string) {
-		final List<Integer> list = Pattern.compile(",")
+		return Pattern.compile(",")
 			.splitAsStream(string)
 			.map( str -> Integer.valueOf(str, 16) )
-			.collect(Collectors.toList());
-		final int[] result = new int[list.size()];
-		for (int i = 0; i < result.length; i++) {
-			result[i] = list.get(i).intValue();
-		}
-		return result;
+			.mapToInt( Integer::intValue ).toArray();
 	}
 
 	/**
