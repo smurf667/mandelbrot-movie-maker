@@ -14,8 +14,10 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.ProgressMonitor;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -31,6 +33,7 @@ public class MovieDialog extends AbstractDialog implements ActionListener, KeyLi
 
 	private final JDialog dialog;
 	private final JTextField framesPerSecond;
+	private final JSlider qualityScale;
 	private final JTextField fileName;
 	private final JButton confirm;
 	private final JButton cancel;
@@ -50,6 +53,7 @@ public class MovieDialog extends AbstractDialog implements ActionListener, KeyLi
 		framesPerSecond = new JTextField(4);
 		framesPerSecond.setText("15"); //$NON-NLS-1$
 		framesPerSecond.addKeyListener(this);
+		qualityScale = new JSlider(SwingConstants.HORIZONTAL, 1, 31, 31 - 4);
 		background = framesPerSecond.getBackground();
 
 		fileName = new JTextField(30);
@@ -75,13 +79,18 @@ public class MovieDialog extends AbstractDialog implements ActionListener, KeyLi
 
 		final String[] labels = {
 			Messages.getString("frame.rate"), //$NON-NLS-1$
+			Messages.getString("quality"), //$NON-NLS-1$
 			Messages.getString("file.name") //$NON-NLS-1$
 		};
-		final JPanel border = new JPanel();
-		border.setLayout(new FlowLayout(FlowLayout.LEFT));
-		border.add(framesPerSecond);
+		final JPanel fpsBorder = new JPanel();
+		fpsBorder.setLayout(new FlowLayout(FlowLayout.LEFT));
+		fpsBorder.add(framesPerSecond);
+		final JPanel qBorder = new JPanel();
+		qBorder.setLayout(new FlowLayout(FlowLayout.LEFT));
+		qBorder.add(qualityScale);
 		final JComponent[] components = {
-			border,
+			fpsBorder,
+			qBorder,
 			fileNamePanel
 		};
 		addRows(labels, components, gridbag, contentPane);
@@ -107,13 +116,14 @@ public class MovieDialog extends AbstractDialog implements ActionListener, KeyLi
 			dialog.setVisible(false);
 			dialog.dispose();
 			if (isConfirm) {
-				final int fps = Integer.parseInt(framesPerSecond.getText());
+				final int fps = toInt(framesPerSecond);
+				final int qScale = 32 - qualityScale.getValue();
 				SwingUtilities.invokeLater(() -> {
 					final int max = designer.thumbnails.size() - 1;
 					final ProgressMonitor progress = new ProgressMonitor(this, Messages.getString("rendering"), null, 0, max * designer.framesPerZoom); //$NON-NLS-1$
 					progress.setMillisToDecideToPopup(50);
 					progress.setMillisToPopup(250);
-					new MovieRenderer(designer, fps, fileName.getText(), progress).execute();
+					new MovieRenderer(designer, fps, qScale, fileName.getText(), progress).execute();
 				});
 			}
 		} else if (choose.equals(source)) {
@@ -151,7 +161,8 @@ public class MovieDialog extends AbstractDialog implements ActionListener, KeyLi
 		if (framesPerSecond.equals(source)) {
 			validateNumber((JTextField) source, confirm);
 		}
-		confirm.setEnabled(fileName.getText().length() > 0);
+		final String str = fileName.getText();
+		confirm.setEnabled(str.length() > 0 && str.endsWith("mp4"));
 	}
 
 	@Override

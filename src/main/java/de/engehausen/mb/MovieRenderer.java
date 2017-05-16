@@ -10,6 +10,8 @@ import javax.swing.SwingWorker;
 import com.xuggle.mediatool.IMediaWriter;
 import com.xuggle.mediatool.ToolFactory;
 import com.xuggle.xuggler.ICodec;
+import com.xuggle.xuggler.IRational;
+import com.xuggle.xuggler.IStreamCoder;
 
 import de.engehausen.mb.math.MandelbrotSet;
 import de.engehausen.mb.math.Number;
@@ -24,6 +26,7 @@ public class MovieRenderer extends SwingWorker<Void, Void> {
 
 	private final Designer designer;
 	private final int framesPerSecond;
+	private final int qScale;
 	private final ProgressMonitor progress;
 	private final String fileName;
 
@@ -31,18 +34,21 @@ public class MovieRenderer extends SwingWorker<Void, Void> {
 	 * Creates the render.
 	 * @param designer the designer supplying the zoom step information
 	 * @param fps the frames per second
+	 * @param quality the quality (1..31, from best to worst)
 	 * @param fileName the file name of the result video
 	 * @param monitor a progress monitor
 	 */
 	public MovieRenderer(
 		final Designer designer,
 		final int fps,
+		final int quality,
 		final String fileName,
 		final ProgressMonitor monitor
 	) {
 		this.designer = designer;
 		this.fileName = fileName;
 		framesPerSecond = fps;
+		qScale = quality;
 		progress = monitor;
 	}
 
@@ -62,7 +68,11 @@ public class MovieRenderer extends SwingWorker<Void, Void> {
 		final double fpzd = fpz;
 
 		final IMediaWriter writer = ToolFactory.makeWriter(fileName);
-		writer.addVideoStream(0, 0, ICodec.ID.CODEC_ID_MPEG4, dimension.width, dimension.height);
+		final int streamIndex = writer.addVideoStream(0, 0, ICodec.ID.CODEC_ID_MPEG4, IRational.make(1000, framesPerSecond), dimension.width, dimension.height);
+		final IStreamCoder coder = writer.getContainer().getStream(streamIndex).getStreamCoder();
+		coder.setFlag(IStreamCoder.Flags.FLAG_QSCALE, true);
+		coder.setGlobalQuality(qScale);
+		coder.setProperty("qscale", qScale);
 		final long msGoal = (long) 1000d/framesPerSecond;
 		long timestamp = 0;
 		int zoomStep = 0;
@@ -79,7 +89,7 @@ public class MovieRenderer extends SwingWorker<Void, Void> {
 				final Number frame = new Number(last.topLeft);
 				double frameScale = last.scale;
 				int off = last.frameOffset;
-				for (int j = 0; j < fpz; j++, count++) {
+				for (int j = 0; j < fpz && !progress.isCanceled(); j++, count++) {
 					writer.encodeVideo(0, mandelbrot.render(frame, frameScale, dimension.width, dimension.height, off, colors), timestamp, TimeUnit.MILLISECONDS);
 					timestamp += msGoal;
 					progress.setProgress(count);
@@ -89,7 +99,7 @@ public class MovieRenderer extends SwingWorker<Void, Void> {
 						off++;
 					}
 				}
-			} while (zoomStep < max && !progress.isCanceled());
+			} while (zoomStep < max);
 		} catch (Throwable jan) {
 			jan.printStackTrace(System.err);
 		} finally {
