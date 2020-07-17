@@ -2,6 +2,7 @@ package de.engehausen.mb;
 
 import java.awt.Dimension;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.ProgressMonitor;
@@ -9,6 +10,7 @@ import javax.swing.SwingWorker;
 
 import com.xuggle.mediatool.IMediaWriter;
 import com.xuggle.mediatool.ToolFactory;
+import com.xuggle.xuggler.Configuration;
 import com.xuggle.xuggler.ICodec;
 import com.xuggle.xuggler.IRational;
 import com.xuggle.xuggler.IStreamCoder;
@@ -27,6 +29,7 @@ public class MovieRenderer extends SwingWorker<Void, Void> {
 	private final Designer designer;
 	private final int framesPerSecond;
 	private final int qScale;
+	private final int bitRate;
 	private final ProgressMonitor progress;
 	private final String fileName;
 
@@ -34,7 +37,8 @@ public class MovieRenderer extends SwingWorker<Void, Void> {
 	 * Creates the render.
 	 * @param designer the designer supplying the zoom step information
 	 * @param fps the frames per second
-	 * @param quality the quality (1..31, from best to worst)
+	 * @param quality the quality (1..51, from best to worst)
+	 * @param bitrate bitrate for the video
 	 * @param fileName the file name of the result video
 	 * @param monitor a progress monitor
 	 */
@@ -42,6 +46,7 @@ public class MovieRenderer extends SwingWorker<Void, Void> {
 		final Designer designer,
 		final int fps,
 		final int quality,
+		final int bitrate,
 		final String fileName,
 		final ProgressMonitor monitor
 	) {
@@ -49,6 +54,7 @@ public class MovieRenderer extends SwingWorker<Void, Void> {
 		this.fileName = fileName;
 		framesPerSecond = fps;
 		qScale = quality;
+		bitRate = bitrate;
 		progress = monitor;
 	}
 
@@ -67,13 +73,18 @@ public class MovieRenderer extends SwingWorker<Void, Void> {
 		final Dimension dimension = designer.getFramePreview().getPreferredSize();
 		final double fpzd = fpz;
 
+		final Properties configProps = new Properties();
+		configProps.load(MovieRenderer.class.getResourceAsStream("/h264.properties"));
+		configProps.setProperty("qmin", Integer.toString(qScale));
+		configProps.setProperty("qmax", Integer.toString(qScale));
+		configProps.setProperty("b", Integer.toString(bitRate));
+		configProps.setProperty("ab", Integer.toString(bitRate));
+
 		final IMediaWriter writer = ToolFactory.makeWriter(fileName);
-		final int streamIndex = writer.addVideoStream(0, 0, ICodec.ID.CODEC_ID_MPEG4, IRational.make(1000, framesPerSecond), dimension.width, dimension.height);
+		final int streamIndex = writer.addVideoStream(0, 0, ICodec.ID.CODEC_ID_H264, IRational.make(1000, framesPerSecond), dimension.width, dimension.height);
 		final IStreamCoder coder = writer.getContainer().getStream(streamIndex).getStreamCoder();
-		coder.setFlag(IStreamCoder.Flags.FLAG_QSCALE, true);
-		coder.setGlobalQuality(qScale);
-		coder.setProperty("qscale", qScale);
-		final long msGoal = (long) 1000d/framesPerSecond;
+		Configuration.configure(configProps, coder);
+		final long msGoal = (long) 1000d / framesPerSecond;
 		long timestamp = 0;
 		int zoomStep = 0;
 
@@ -100,8 +111,8 @@ public class MovieRenderer extends SwingWorker<Void, Void> {
 					}
 				}
 			} while (zoomStep < max);
-		} catch (Throwable jan) {
-			jan.printStackTrace(System.err);
+		} catch (Throwable t) {
+			t.printStackTrace(System.err);
 		} finally {
 			writer.close();
 			progress.close();

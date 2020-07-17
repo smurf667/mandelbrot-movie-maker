@@ -3,7 +3,7 @@
 	<groupId>de.engehausen</groupId>
 	<artifactId>mandelbrot-movie-maker</artifactId>
 	<packaging>jar</packaging>
-	<version>0.1.0</version>
+	<version>0.2.0-SNAPSHOT</version>
 	<name>MandelbrotMovieMaker</name>
 	<description>Tool to create a zooming video of a Mandelbrot set</description>
 	<properties>

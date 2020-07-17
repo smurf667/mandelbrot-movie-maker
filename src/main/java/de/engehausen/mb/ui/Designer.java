@@ -335,7 +335,7 @@ public class Designer extends JFrame implements ActionListener {
 			dialog.getContentPane().add(new MovieDialog(dialog, this));
 			dialog.pack();
 			final Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
-			dialog.setLocation(new Double(size.getWidth()/2 - dialog.getWidth()/2).intValue(), new Double(size.getHeight()/2 - dialog.getHeight()/2).intValue());
+			dialog.setLocation(Double.valueOf(size.getWidth()/2 - dialog.getWidth()/2).intValue(), Double.valueOf(size.getHeight()/2 - dialog.getHeight()/2).intValue());
 			SwingUtilities.invokeLater(() -> { dialog.setVisible(true); });
 		} else if (help.equals(source)) {
 			final JTextPane text = new JTextPane();
