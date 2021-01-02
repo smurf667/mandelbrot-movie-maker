@@ -36,14 +36,15 @@ public class MandelbrotSet {
 		int py = 0;
 		for (double y = topLeft.getImaginary(); py < height; py++, y += steps) {
 			px = 0;
+			final Number c = new Number(0, 0);
 			for (double x = topLeft.getReal(); px < width; px++, x += steps) {
 				final Number number = new Number(0, 0);
-				final Number c = new Number(x, y);
+				c.set(x, y);
 				int i = 0;
 				do {
 					number.multiply(number).add(c);
 				} while (i++ < colors.length && number.inside());
-				img.setRGB(px, py, colors[(offset+i) % colors.length]);
+				img.setRGB(px, py, colors[(offset + i) % colors.length]);
 			}
 		}
 		return img;

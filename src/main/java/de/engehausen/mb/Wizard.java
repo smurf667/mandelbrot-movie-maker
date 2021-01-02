@@ -47,7 +47,6 @@ public class Wizard extends AbstractDialog implements ActionListener, KeyListene
 	private final JDialog dialog;
 	private final JTextField textWidth;
 	private final JTextField textHeight;
-	private final JTextField framesPerZoom;
 	private final JSlider colorCount;
 	private final JSlider hueOffset;
 	private final JSlider hueRange;
@@ -60,7 +59,6 @@ public class Wizard extends AbstractDialog implements ActionListener, KeyListene
 	private final GradientPreview preview;
 	private final MandelbrotPreview setPreview;
 	private final JCheckBox mirrorColors;
-	private final JCheckBox rotateColors;
 
 	/**
 	 * Creates the wizard
@@ -76,9 +74,6 @@ public class Wizard extends AbstractDialog implements ActionListener, KeyListene
 		textHeight = new JTextField(10);
 		textHeight.setText("576"); //$NON-NLS-1$
 		textHeight.addKeyListener(this);
-		framesPerZoom = new JTextField(10);
-		framesPerZoom.setText("100"); //$NON-NLS-1$
-		framesPerZoom.addKeyListener(this);
 
 		colorCount = createSlider(8, 255, 128);
 		hueOffset = createSlider(0, 360, 0);
@@ -89,9 +84,6 @@ public class Wizard extends AbstractDialog implements ActionListener, KeyListene
 
 		mirrorColors = new JCheckBox();
 		mirrorColors.setSelected(true);
-
-		rotateColors = new JCheckBox();
-		rotateColors.setSelected(false);
 
 		setPreview = new MandelbrotPreview(new Dimension(224, 128));
 
@@ -111,7 +103,6 @@ public class Wizard extends AbstractDialog implements ActionListener, KeyListene
 		final String[] labels = {
 			Messages.getString("width"), //$NON-NLS-1$
 			Messages.getString("height"), //$NON-NLS-1$
-			Messages.getString("frame.zoom"), //$NON-NLS-1$
 			Messages.getString("hue.count"), //$NON-NLS-1$
 			Messages.getString("hue.offset"), //$NON-NLS-1$
 			Messages.getString("hue.range"), //$NON-NLS-1$
@@ -119,13 +110,11 @@ public class Wizard extends AbstractDialog implements ActionListener, KeyListene
 			Messages.getString("brightness.freq"), //$NON-NLS-1$
 			Messages.getString("gradient"), //$NON-NLS-1$
 			Messages.getString("seamless"), //$NON-NLS-1$
-			Messages.getString("shift.colors"), //$NON-NLS-1$
 			Messages.getString("preview") //$NON-NLS-1$
 		};
 		final JComponent[] components = {
 			textWidth,
 			textHeight,
-			framesPerZoom,
 			colorCount,
 			hueOffset,
 			hueRange,
@@ -133,7 +122,6 @@ public class Wizard extends AbstractDialog implements ActionListener, KeyListene
 			brightnessFreq,
 			preview,
 			mirrorColors,
-			rotateColors,
 			setPreview
 		};
 		addRows(labels, components, gridbag, contentPane);
@@ -199,7 +187,6 @@ public class Wizard extends AbstractDialog implements ActionListener, KeyListene
 			dialog.dispose();
 			if (confirm.equals(source)) {
 				final int[] colors = getColors();
-				final int frames = toInt(framesPerZoom);
 				final FrameData frameData = new FrameData(
 					new Dimension(toInt(textWidth), toInt(textHeight)),
 					new Number(-2.25, -1),
@@ -207,7 +194,7 @@ public class Wizard extends AbstractDialog implements ActionListener, KeyListene
 					0
 				);
 				SwingUtilities.invokeLater(() -> {
-					new Designer(frameData, frames, rotateColors.isSelected(), colors).setVisible(true);
+					new Designer(frameData, colors).setVisible(true);
 				});
 			}
 		} else if (load.equals(source)) {
@@ -221,8 +208,6 @@ public class Wizard extends AbstractDialog implements ActionListener, KeyListene
 					SwingUtilities.invokeLater(() -> {
 						new Designer(
 							metaData.frameData,
-							metaData.framesPerZoom,
-							metaData.shiftColors,
 							metaData.getColors()
 						).setVisible(true);
 					});

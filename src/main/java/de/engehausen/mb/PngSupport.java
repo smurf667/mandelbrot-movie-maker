@@ -31,8 +31,6 @@ public class PngSupport {
 
 	private static final String KEY_COLORS = "colors"; //$NON-NLS-1$
 	private static final String KEY_FRAME_DATA = "frameData"; //$NON-NLS-1$
-	private static final String KEY_SHIFT_COLORS = "shift"; //$NON-NLS-1$
-	private static final String KEY_ZOOM_FRAMES = "fpz"; //$NON-NLS-1$
 
 	/**
 	 * Writes the image in PNG format and attached the given meta data.
@@ -73,10 +71,6 @@ public class PngSupport {
 						result.frameData = FrameData.parseFrameData(node.getAttribute(META_VALUE));
 					} else if (KEY_COLORS.equals(key)) {
 						result.colors = parseColors(node.getAttribute(META_VALUE));
-					} else if (KEY_SHIFT_COLORS.equals(key)) {
-						result.shiftColors = Boolean.parseBoolean(node.getAttribute(META_VALUE));
-					} else if (KEY_ZOOM_FRAMES.equals(key)) {
-						result.framesPerZoom = Integer.parseInt(node.getAttribute(META_VALUE), 16);
 					}
 				}
 			} else {
@@ -103,8 +97,6 @@ public class PngSupport {
 
 				final IIOMetadata data = image.getMetadata();
 				addMetaData(data, KEY_FRAME_DATA, FrameData.toString(metaData.frameData));
-				addMetaData(data, KEY_ZOOM_FRAMES, Integer.toString(metaData.framesPerZoom, 16));
-				addMetaData(data, KEY_SHIFT_COLORS, Boolean.toString(metaData.shiftColors));
 				addMetaData(data, KEY_COLORS, toString(metaData.colors));
 
 				final ImageWriter writer = ImageIO.getImageWriter(reader);
@@ -166,8 +158,6 @@ public class PngSupport {
 
 		public FrameData frameData;
 		public int[] colors;
-		public int framesPerZoom;
-		public boolean shiftColors;
 
 		/**
 		 * Returns the color array. This method

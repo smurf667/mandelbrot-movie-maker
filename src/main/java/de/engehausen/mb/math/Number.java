@@ -43,13 +43,39 @@ public class Number {
 	}
 
 	/**
+	 * Sets the components
+	 * @param r the real component
+	 * @param i the imaginary component
+	 */
+	public void set(final double r, final double i) {
+		a = r;
+		b = i;
+	}
+
+	/**
+	 * Sets the real component
+	 * @param r the real component
+	 */
+	public void setReal(final double r) {
+		a = r;
+	}
+
+	/**
+	 * Sets the imaginary component
+	 * @param i the imaginary component
+	 */
+	public void setImaginary(final double i) {
+		b = i;
+	}
+
+	/**
 	 * Multiplies this number by the given number.
 	 * @param number the number to multiply by.
 	 * @return this, modified instance
 	 */
 	public Number multiply(final Number number) {
-		final double nx = a*number.a - b*number.b;
-		final double ny = a*number.b + b*number.a;
+		final double nx = a * number.a - b * number.b;
+		final double ny = a * number.b + b * number.a;
 		a = nx;
 		b = ny;
 		return this;

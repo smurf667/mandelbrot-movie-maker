@@ -63,24 +63,18 @@ public class Designer extends JFrame implements ActionListener {
 	protected final FramePreview preview;
 	protected final DefaultListModel<Preview> thumbnails;
 	protected final MandelbrotSet mandelbrot;
-	protected final int framesPerZoom;
-	protected final boolean rotateColors;
-	
+
 	private final double aspectRatio;
 
 	/**
 	 * Creates the designer UI. This has a horrible constructor. Thanks, Swing!
 	 * @param frameData frame data for the initial Mandelbrot set view
-	 * @param framesPerZoom number of frames per zoom step (for movie generation)
-	 * @param rotateColors {@code true} if colors should be rotated on each zoom frame
 	 * @param colors the RGB colors used for rendering
 	 */
-	public Designer(final FrameData frameData, final int framesPerZoom, final boolean rotateColors, final int... colors) {
+	public Designer(final FrameData frameData, final int... colors) {
 		super(Messages.getString("title")); //$NON-NLS-1$
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		setResizable(false);
-		this.framesPerZoom = framesPerZoom;
-		this.rotateColors = rotateColors;
 
 		mandelbrot = new MandelbrotSet();
 		aspectRatio = frameData.dimension.getHeight() / frameData.dimension.getWidth();
@@ -211,17 +205,17 @@ public class Designer extends JFrame implements ActionListener {
 						for (int i = thumbnails.size(); --i >= idx; ) {
 							thumbnails.remove(i);
 						}
+						getRenderMovie().setEnabled(thumbnails.size() > 1);
+						final Preview thumb = thumbnails.getElementAt(idx-1);
+						previews.setSelectedIndex(idx-1);
+						SwingUtilities.invokeLater(() -> {
+							preview.frameData.topLeft = new Number(thumb.frameData.topLeft);
+							preview.frameData.scale = thumb.frameData.scale;
+							preview.frameData.frameOffset = thumb.frameData.frameOffset;
+							preview.image = mandelbrot.render(preview.frameData, colors);
+							preview.repaint();
+						});
 					}
-					getRenderMovie().setEnabled(thumbnails.size() > 1);
-					final Preview thumb = thumbnails.getElementAt(idx-1);
-					previews.setSelectedIndex(idx-1);
-					SwingUtilities.invokeLater(() -> {
-						preview.frameData.topLeft = new Number(thumb.frameData.topLeft);
-						preview.frameData.scale = thumb.frameData.scale;
-						preview.frameData.frameOffset = thumb.frameData.frameOffset;
-						preview.image = mandelbrot.render(preview.frameData, colors);
-						preview.repaint();
-					});
 				}
 			}
 		});
@@ -248,14 +242,6 @@ public class Designer extends JFrame implements ActionListener {
 	}
 
 	/**
-	 * Returns the number of frames to render per zoom.
-	 * @return the number of frames to render per zoom.
-	 */
-	public int getFramesPerZoom() {
-		return framesPerZoom;
-	}
-
-	/**
 	 * Returns the RGB colors used for rendering.
 	 * @return the RGB colors used for rendering.
 	 */
@@ -269,14 +255,6 @@ public class Designer extends JFrame implements ActionListener {
 	 */
 	public MandelbrotSet getMandelbrotSet() {
 		return mandelbrot;
-	}
-
-	/**
-	 * Indicates whether to rotate colors on each zoom frame.
-	 * @return {@code true} if colors should be rotated, {@code false} otherwise.
-	 */
-	public boolean isRotateColors() {
-		return rotateColors;
 	}
 
 	protected final void createThumbnail(final FramePreview frame) {
@@ -317,9 +295,7 @@ public class Designer extends JFrame implements ActionListener {
 				final File file = fileChooser.getSelectedFile();
 				final PngSupport.MandelbrotMetaData metaData = new PngSupport.MandelbrotMetaData();
 				metaData.frameData = getFramePreview().frameData;
-				metaData.framesPerZoom = getFramesPerZoom();
 				metaData.colors = getColors();
-				metaData.shiftColors = rotateColors;
 				SwingUtilities.invokeLater(() -> {
 					try {
 						new PngSupport().writeImageWithMetaData(preview.image, file, metaData);
