@@ -26,7 +26,7 @@ Now you can run the output as a normal Java application, e.g. `java [-Duser.lang
 
 Here are two videos generated with the tool:
 
-[![v0.2.0](https://img.youtube.com/vi/BMJ7DHeYodc/0.jpg)](https://www.youtube.com/watch?v=BMJ7DHeYodc)
+[![v0.2.0](https://img.youtube.com/vi/BOyfSGexU08/0.jpg)](https://youtu.be/BOyfSGexU08)
 
 [![v0.1.0](https://img.youtube.com/vi/BMJ7DHeYodc/0.jpg)](https://www.youtube.com/watch?v=BMJ7DHeYodc)
 
