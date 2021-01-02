@@ -50,9 +50,6 @@ public class FramePreview extends Preview {
 			final double percent = (getMaxX() - minX) / frameData.dimension.getWidth();
 			frameData.scale *= percent;
 			Arrays.fill(selection, 0);
-			if (parentView.rotateColors) {
-				frameData.frameOffset += parentView.framesPerZoom;
-			}
 			SwingUtilities.invokeLater(() -> {
 				image = parentView.mandelbrot.render(frameData, colors);
 				parentView.createThumbnail(this);

@@ -13,6 +13,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
@@ -33,7 +34,9 @@ public class MovieDialog extends AbstractDialog implements ActionListener, KeyLi
 
 	private final JDialog dialog;
 	private final JTextField framesPerSecond;
+	private final JSlider duration;
 	private final JSlider qualityScale;
+	private final JSlider bitrate;
 	private final JTextField fileName;
 	private final JButton confirm;
 	private final JButton cancel;
@@ -51,15 +54,30 @@ public class MovieDialog extends AbstractDialog implements ActionListener, KeyLi
 		this.designer = designer;
 		setLayout(new BorderLayout());
 		framesPerSecond = new JTextField(4);
-		framesPerSecond.setText("15"); //$NON-NLS-1$
+		framesPerSecond.setText("25"); //$NON-NLS-1$
 		framesPerSecond.addKeyListener(this);
-		qualityScale = new JSlider(SwingConstants.HORIZONTAL, 1, 31, 31 - 4);
+		qualityScale = new JSlider(SwingConstants.HORIZONTAL, 1, 51, 31);
+		final JLabel qsLabel = new JLabel(Integer.toString(qualityScale.getValue()));
+		qualityScale.addChangeListener(e -> {
+			qsLabel.setText(Integer.toString(qualityScale.getValue()));
+		});
+		bitrate = new JSlider(SwingConstants.HORIZONTAL, 96, 512, 128);
+		final JLabel brLabel = new JLabel(Integer.toString(bitrate.getValue()));
+		bitrate.addChangeListener(e -> {
+			brLabel.setText(Integer.toString(bitrate.getValue()));
+		});
+		duration = new JSlider(SwingConstants.HORIZONTAL, 10, 300, 120);
+		final JLabel dLabel = new JLabel(Integer.toString(duration.getValue()));
+		duration.addChangeListener(e -> {
+			dLabel.setText(Integer.toString(duration.getValue()));
+		});
+
 		background = framesPerSecond.getBackground();
 
 		fileName = new JTextField(30);
 		fileName.setText(""); //$NON-NLS-1$
 		fileName.addKeyListener(this);
-		
+
 		final JPanel fileNamePanel = new JPanel();
 		fileNamePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 		fileNamePanel.add(fileName);
@@ -80,6 +98,8 @@ public class MovieDialog extends AbstractDialog implements ActionListener, KeyLi
 		final String[] labels = {
 			Messages.getString("frame.rate"), //$NON-NLS-1$
 			Messages.getString("quality"), //$NON-NLS-1$
+			Messages.getString("bitrate"), //$NON-NLS-1$
+			Messages.getString("duration"), //$NON-NLS-1$
 			Messages.getString("file.name") //$NON-NLS-1$
 		};
 		final JPanel fpsBorder = new JPanel();
@@ -88,9 +108,20 @@ public class MovieDialog extends AbstractDialog implements ActionListener, KeyLi
 		final JPanel qBorder = new JPanel();
 		qBorder.setLayout(new FlowLayout(FlowLayout.LEFT));
 		qBorder.add(qualityScale);
+		qBorder.add(qsLabel);
+		final JPanel bBorder = new JPanel();
+		bBorder.setLayout(new FlowLayout(FlowLayout.LEFT));
+		bBorder.add(bitrate);
+		bBorder.add(brLabel);
+		final JPanel dBorder = new JPanel();
+		dBorder.setLayout(new FlowLayout(FlowLayout.LEFT));
+		dBorder.add(duration);
+		dBorder.add(dLabel);
 		final JComponent[] components = {
 			fpsBorder,
 			qBorder,
+			bBorder,
+			dBorder,
 			fileNamePanel
 		};
 		addRows(labels, components, gridbag, contentPane);
@@ -117,13 +148,14 @@ public class MovieDialog extends AbstractDialog implements ActionListener, KeyLi
 			dialog.dispose();
 			if (isConfirm) {
 				final int fps = toInt(framesPerSecond);
-				final int qScale = 32 - qualityScale.getValue();
+				final int qScale = qualityScale.getValue();
+				final int bitRate = bitrate.getValue() * 1000;
+				final int seconds = duration.getValue();
 				SwingUtilities.invokeLater(() -> {
-					final int max = designer.thumbnails.size() - 1;
-					final ProgressMonitor progress = new ProgressMonitor(this, Messages.getString("rendering"), null, 0, max * designer.framesPerZoom); //$NON-NLS-1$
+					final ProgressMonitor progress = new ProgressMonitor(this, Messages.getString("rendering"), null, 0, seconds * fps); //$NON-NLS-1$
 					progress.setMillisToDecideToPopup(50);
 					progress.setMillisToPopup(250);
-					new MovieRenderer(designer, fps, qScale, fileName.getText(), progress).execute();
+					new MovieRenderer(designer, fps, seconds, qScale, bitRate, fileName.getText(), progress).execute();
 				});
 			}
 		} else if (choose.equals(source)) {

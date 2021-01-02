@@ -69,4 +69,15 @@ public class FrameData {
 		this.frameOffset = frameOffset;
 	}
 
+	/**
+	 * Creates frame data with the values of the given source.
+	 * @param data the source data
+	 */
+	public FrameData(final FrameData data) {
+		this.dimension = data.dimension;
+		this.topLeft = new Number(data.topLeft);
+		this.scale = data.scale;
+		this.frameOffset = data.frameOffset;
+	}
+
 }
