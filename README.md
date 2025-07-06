@@ -1,6 +1,7 @@
 # Mandelbrot Movie Maker
 
 This is just a toy. It was born after watching this [excellent video](https://youtu.be/NGMRB4O922I) on the [Mandelbrot set](https://en.wikipedia.org/wiki/Mandelbrot_set).
+Matt Parker also put out this very [entertaining video](https://youtu.be/0OP9guFmWfs).
 
 I am amazed how such beautiful complexity can spring from a simple iteration formula.
 
